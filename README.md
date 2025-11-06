@@ -2,7 +2,7 @@
 This repository provides a simple configuration script that automatically sets up virtual audio devices for the 
 Rodecaster Pro II using PipeWire. 
 
-![Image of the Virtual Audio Devices in KDE System Settings](./.github/assets/audio-devices.png)
+![Image of the Virtual Audio Devices in KDE System Settings](.github/assets/audio-devices.png)
 
 ## Installing the Configuration
 You can install this configuration by using one of the following methods.
@@ -25,4 +25,4 @@ cd rodecaster-pro-2-virtual-devices-pipewire
 ```
 
 ## License
-This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
