@@ -35,17 +35,26 @@ write_config_file() {
   local output_file="$2"
   local useSudo="$3"
 
-  # download template file, fail on 404
-  if [ "$useSudo" = "true" ]; then
-    sudo curl -fSL "$TEMPLATE_DOWNLOAD_URL" -o "$output_file"
+  # copy template file, if it exists in the current directory
+  if [ -f "$TEMPLATE_FILE" ]; then
+    if [ "$useSudo" = "true" ]; then
+      sudo cp "$TEMPLATE_FILE" "$output_file"
+    else
+      cp "$TEMPLATE_FILE" "$output_file"
+    fi
   else
-    curl -fSL "$TEMPLATE_DOWNLOAD_URL" -o "$output_file"
-  fi
 
-  # cancel if download failed
-  if [ $? -ne 0 ]; then
-    echo "Failed to download template file from $TEMPLATE_DOWNLOAD_URL"
-    exit 1
+    # download template file, fail on 404
+    if [ "$useSudo" = "true" ]; then
+      sudo curl -fSL "$TEMPLATE_DOWNLOAD_URL" -o "$output_file"
+    else
+      curl -fSL "$TEMPLATE_DOWNLOAD_URL" -o "$output_file"
+    fi
+
+    if [ $? -ne 0 ]; then
+      echo "Failed to download template file from $TEMPLATE_DOWNLOAD_URL"
+      exit 1
+    fi
   fi
 
   # replace placeholder with actual device serial
