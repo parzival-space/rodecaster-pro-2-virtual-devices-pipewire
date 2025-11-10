@@ -141,7 +141,7 @@ uninstall() {
 
 # DO NOT EDIT THESE VARIABLES BELOW
 TEMPLATE_FILE="rodecaster-pro-2.template.conf"
-TEMPLATE_DOWNLOAD_URL="https://parival-space.github.io/rodecaster-pro-2-virtual-devices-pipewire/${TEMPLATE_FILE}"
+TEMPLATE_DOWNLOAD_URL="https://parzival-space.github.io/rodecaster-pro-2-virtual-devices-pipewire/${TEMPLATE_FILE}"
 TEMPLATE_STRING_DEVICE_SERIAL="{{DEVICE_SERIAL}}"
 PIPEWIRE_CONFIG_DIR_SYSTEM="/usr/share/pipewire/pipewire.conf.d"
 PIPEWIRE_CONFIG_DIR_USER="$HOME/.config/pipewire/pipewire.conf.d"
