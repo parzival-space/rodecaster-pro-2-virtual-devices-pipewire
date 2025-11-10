@@ -1,27 +1,26 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 check_requirements() {
   # check if command 'pw-cli' exists
-  if ! command -v pw-cli &> /dev/null; then
+  if ! command -v pw-cli >/dev/null 2>&1; then
     echo "PipeWire CLI (pw-cli) is not installed. Please install PipeWire and its development tools."
     exit 1
   fi
 
   # check if command 'pw-cli info 0' fails
-  if ! pw-cli info 0 &> /dev/null; then
+  if ! pw-cli info 0 >/dev/null 2>&1; then
     echo "PipeWire does not seem to be running or accessible. Please ensure PipeWire is installed and running."
     exit 1
   fi
 
   # install curl if missing
-  if ! command -v curl &> /dev/null; then
+  if ! command -v curl >/dev/null 2>&1; then
     echo "curl could not be found, installing..."
-    if command -v apt-get &> /dev/null; then
-      sudo apt-get update
-      sudo apt-get install -y curl
-    elif command -v yum &> /dev/null; then
+    if command -v apt-get >/dev/null 2>&1; then
+      sudo apt-get update && sudo apt-get install -y curl
+    elif command -v yum >/dev/null 2>&1; then
       sudo yum install -y curl
-    elif command -v pacman &> /dev/null; then
+    elif command -v pacman >/dev/null 2>&1; then
       sudo pacman -Sy curl
     else
       echo "Package manager not supported. Please install curl manually."
@@ -31,9 +30,9 @@ check_requirements() {
 }
 
 write_config_file() {
-  local device_serial="$1"
-  local output_file="$2"
-  local useSudo="$3"
+  device_serial="$1"
+  output_file="$2"
+  useSudo="$3"
 
   # copy template file, if it exists in the current directory
   if [ -f "$TEMPLATE_FILE" ]; then
@@ -43,14 +42,12 @@ write_config_file() {
       cp "$TEMPLATE_FILE" "$output_file"
     fi
   else
-
     # download template file, fail on 404
     if [ "$useSudo" = "true" ]; then
       sudo curl -fSL "$TEMPLATE_DOWNLOAD_URL" -o "$output_file"
     else
       curl -fSL "$TEMPLATE_DOWNLOAD_URL" -o "$output_file"
     fi
-
     if [ $? -ne 0 ]; then
       echo "Failed to download template file from $TEMPLATE_DOWNLOAD_URL"
       exit 1
@@ -66,13 +63,13 @@ write_config_file() {
 }
 
 install() {
-  local useUserContext="$1"
+  useUserContext="$1"
+  noRestartAfterInstall="$2"
 
-  # gets a list of device serials from the devices matching "alsa_card.usb-R__DE_RODECaster_Pro_II_(.*)"
-  DEVICE_SERIALS=($(pw-cli ls Device | grep -oP 'alsa_card.usb-R__DE_RODECaster_Pro_II_\K[^"]+'))
-  echo "Found ${#DEVICE_SERIALS[@]} Rodecaster Pro II device(s)."
+  # Get list of device serials
+  DEVICE_SERIALS_TMP=$(pw-cli ls Device | grep 'alsa_card.usb-R__DE_RODECaster_Pro_II_' | sed 's/.*alsa_card\.usb-R__DE_RODECaster_Pro_II_//' | sed 's/".*//')
+  DEVICE_COUNT=0
 
-  # create config directory if it doesn't exist
   CONFIG_DIR="$PIPEWIRE_CONFIG_DIR_SYSTEM"
   if [ "$useUserContext" = "true" ]; then
     CONFIG_DIR="$PIPEWIRE_CONFIG_DIR_USER"
@@ -81,18 +78,17 @@ install() {
       mkdir -p "$CONFIG_DIR"
     fi
   else
-    CONFIG_DIR="$PIPEWIRE_CONFIG_DIR_SYSTEM"
     if [ ! -d "$CONFIG_DIR" ]; then
       echo "Creating system-wide PipeWire config directory at $CONFIG_DIR"
       sudo mkdir -p "$CONFIG_DIR"
     fi
   fi
 
-  # install for each device serial
-  for SERIAL in "${DEVICE_SERIALS[@]}"; do
+  echo "$DEVICE_SERIALS_TMP" | while IFS= read -r SERIAL; do
+    [ -z "$SERIAL" ] && continue
+    DEVICE_COUNT=$((DEVICE_COUNT + 1))
     echo "Installing virtual devices for Rodecaster Pro II with serial: $SERIAL"
     OUTPUT_FILE="${CONFIG_DIR}/rodecaster-pro-2-${SERIAL}.conf"
-
     if [ "$useUserContext" = "true" ]; then
       write_config_file "$SERIAL" "$OUTPUT_FILE" "false"
     else
@@ -101,23 +97,25 @@ install() {
   done
 
   echo "Installation complete. Restarting PipeWire..."
-  if command -v systemctl &> /dev/null; then
-    systemctl --user restart pipewire
-    systemctl --user restart pipewire-pulse
+  if command -v systemctl >/dev/null 2>&1; then
+    if [ "$noRestartAfterInstall" != "true" ]; then
+      systemctl --user restart pipewire 2>/dev/null || true
+      systemctl --user restart pipewire-pulse 2>/dev/null || true
+    else
+      echo "Skipping PipeWire restart as per --no-restart flag."
+    fi
   else
     echo "systemctl not found. Please restart PipeWire manually."
   fi
 }
 
 uninstall() {
-  local useUserContext="$1"
+  useUserContext="$1"
+  noRestartAfterUninstall="$2"
 
-  # remove config files for each device serial (rodecaster-pro-2-*.conf)
   CONFIG_DIR="$PIPEWIRE_CONFIG_DIR_SYSTEM"
   if [ "$useUserContext" = "true" ]; then
     CONFIG_DIR="$PIPEWIRE_CONFIG_DIR_USER"
-  else
-    CONFIG_DIR="$PIPEWIRE_CONFIG_DIR_SYSTEM"
   fi
 
   if [ -d "$CONFIG_DIR" ]; then
@@ -127,10 +125,15 @@ uninstall() {
     else
       sudo rm -f "${CONFIG_DIR}/rodecaster-pro-2-"*.conf
     fi
+
     echo "Uninstallation complete. Restarting PipeWire..."
-    if command -v systemctl &> /dev/null; then
-      systemctl --user restart pipewire
-      systemctl --user restart pipewire-pulse
+    if command -v systemctl >/dev/null 2>&1; then
+      if [ "$noRestartAfterUninstall" != "true" ]; then
+        systemctl --user restart pipewire 2>/dev/null || true
+        systemctl --user restart pipewire-pulse 2>/dev/null || true
+      else
+        echo "Skipping PipeWire restart as per --no-restart flag."
+      fi
     else
       echo "systemctl not found. Please restart PipeWire manually."
     fi
@@ -147,45 +150,45 @@ PIPEWIRE_CONFIG_DIR_SYSTEM="/usr/share/pipewire/pipewire.conf.d"
 PIPEWIRE_CONFIG_DIR_USER="$HOME/.config/pipewire/pipewire.conf.d"
 
 # cli flags
-FLAG_USER_INSTALL="false"
-FLAG_INSTALL="false"
-FLAG_UNINSTALL="false"
+FLAG_USER_INSTALL=false
+FLAG_INSTALL=false
+FLAG_UNINSTALL=false
+FLAG_NO_RESTART=false
 
-while [ "$#" -gt 0 ]; do
+while [ $# -gt 0 ]; do
   case "$1" in
     --user)
-      FLAG_USER_INSTALL="true"
-      shift
+      FLAG_USER_INSTALL=true
       ;;
     --install)
-      FLAG_INSTALL="true"
-      FLAG_UNINSTALL="false"
-      shift
+      FLAG_INSTALL=true
+      FLAG_UNINSTALL=false
       ;;
     --uninstall)
-      FLAG_UNINSTALL="true"
-      FLAG_INSTALL="false"
-      shift
+      FLAG_UNINSTALL=true
+      FLAG_INSTALL=false
+      ;;
+    --no-restart)
+      FLAG_NO_RESTART=true
       ;;
     --help)
-      FLAG_INSTALL="false"
-      FLAG_UNINSTALL="false"
-      shift
-      ;;
-    *)
-      shift
+      FLAG_INSTALL=false
+      FLAG_UNINSTALL=false
       ;;
   esac
+  shift
 done
 
 if [ "$FLAG_INSTALL" = "true" ]; then
-  install "$FLAG_USER_INSTALL"
+  check_requirements
+  install "$FLAG_USER_INSTALL" "$FLAG_NO_RESTART"
 elif [ "$FLAG_UNINSTALL" = "true" ]; then
-  uninstall "$FLAG_USER_INSTALL"
+  uninstall "$FLAG_USER_INSTALL" "$FLAG_NO_RESTART"
 else
   echo "Usage: $0 [--install | --uninstall] [--user]"
   echo "  --install    Install the virtual devices."
   echo "  --uninstall  Uninstall the virtual devices."
+  echo "  --no-restart Do not restart PipeWire after installation/uninstallation."
   echo "  --user       Install for the current user only."
   echo "  --help       Show this help message."
 fi
