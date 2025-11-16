@@ -2,6 +2,9 @@
 This repository provides a simple configuration script that automatically sets up virtual audio devices for the 
 Rodecaster Pro II using PipeWire. 
 
+Please [create an issue](https://github.com/parzival-space/rodecaster-pro-2-virtual-devices-pipewire/issues/new) if you 
+notice any missing channels or have any suggestions for improvement.
+
 ![Image of the qpwgraph with mapped virtual devices](.github/assets/mappings.png)
 
 ## Installing the Configuration
