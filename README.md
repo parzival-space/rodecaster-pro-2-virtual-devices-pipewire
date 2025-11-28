@@ -13,6 +13,14 @@ You can install this configuration by using one of the following methods.
 > [!IMPORTANT]  
 > You need to select the 'Pro Audio' profile for your device for the virtual devices to work correctly.
 
+> [!WARNING]
+> If you are using Ubuntu 25.04 or earlier (or any Ubuntu based distribution on this verson),
+> the devices ``RODECaster Pro II Pro`` and ``RODECaster Pro II Pro 1`` will not be correctly renamed to
+> ``RODECaster Pro II Microphone`` and ``RODECaster Pro II Multi-Channel``.  
+> This happens because only Ubuntu 25.10 and later contain the required ACM configuration for the Rodecaster Pro II.
+>
+> The virtual Channels will work regardless of this issue.
+
 ### Method 1: Using the installation script
 Run the provided installation script to set up the virtual audio devices automatically:
 ```bash
