@@ -2,6 +2,11 @@
 This repository provides a simple configuration script that automatically sets up virtual audio devices for the 
 Rodecaster Pro II using PipeWire. 
 
+> [!NOTE]
+> There's currently an [active PR](https://github.com/alsa-project/alsa-ucm-conf/pull/656) over at the [alsa-ucm-conf repository](https://github.com/alsa-project/alsa-ucm-conf/) for adding these virtual channels.
+> This repository will become obsolete once said PR gets merged. If you want to use the UCM profile now,
+> instead of these pipewire configurations, you have to manually install them from [this repository](https://github.com/parzival-space/alsa-ucm-conf/tree/rode/rodecaster-pro-ii).
+
 Please [create an issue](https://github.com/parzival-space/rodecaster-pro-2-virtual-devices-pipewire/issues/new) if you 
 notice any missing channels or have any suggestions for improvement.
 
