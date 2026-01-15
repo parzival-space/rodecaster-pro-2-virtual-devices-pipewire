@@ -52,7 +52,7 @@ sudo cp ./rodecaster-pro-2.template.conf /usr/share/pipewire/pipewire.conf.d/rod
 # you need to replace "__REPLACE_WITH_YOUR_SERIAL__" with your Rodecaster Pro II's serial number
 sudo sed -i "s/{{DEVICE_SERIAL}}/__REPLACE_WITH_YOUR_SERIAL__-00/g" /usr/share/pipewire/pipewire.conf.d/rodecaster-pro-2.conf
 
-sudo systemctl --user restart pipewire
+systemctl --user restart pipewire
 ```
 
 ## License
