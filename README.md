@@ -5,7 +5,7 @@ Rodecaster Pro II using PipeWire.
 > [!IMPORTANT]
 > The ALSA usecase config for the RODECaster Pro II has been merged with [PR #656](https://github.com/alsa-project/alsa-ucm-conf/pull/656) into the [alsa-ucm-conf repository](https://github.com/alsa-project/alsa-ucm-conf/), which means that this repository will become obsolete with the next release of alsa-ucm-conf.
 >   
-> Arch Linux users can already install the new UCM config now using the following command:
+> Arch Linux users can already install the new UCM config using the following command:
 > ```bash
 > yay -S alsa-ucm-conf-git
 > ```
