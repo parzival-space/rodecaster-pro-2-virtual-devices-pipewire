@@ -9,8 +9,9 @@ notice any missing channels or have any suggestions for improvement.
 > RODE broke this **configuration** with their 1.7.3 update.
 > There is currently no way of knowing the exact channel configuration and their correct mappings of the RODECaster device since it now changes based on what the user configures.
 >
-> **THIS CONFIGURATION IS INCOMPATIBLE WITH FIRMWARE VERSION 1.7.3**
+> **THIS CONFIGURATION IS INCOMPATIBLE WITH FIRMWARE VERSION 1.7.3**  
 > If you are able to, please stay on version 1.6.8.
+> Please also see issue https://github.com/parzival-space/rodecaster-pro-2-virtual-devices-pipewire/issues/4 for more information.
 
 ![Image of the qpwgraph with mapped virtual devices](.github/assets/mappings.png)
 
