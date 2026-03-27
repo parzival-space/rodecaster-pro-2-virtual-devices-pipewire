@@ -27,12 +27,33 @@ check_requirements() {
       exit 1
     fi
   fi
+
+  # check if one of the PIDs for Rodecaster Pro II is present in the list of devices using lsusb
+  if ! lsusb | grep -E "${RODE_VID}:${RODECASTER_PRO_2_PID_1_6_8}|${RODE_VID}:${RODECASTER_PRO_2_PID_1_7_3}" >/dev/null 2>&1; then
+    echo "No Rodecaster Pro II Multitrack device detected. Please connect your Rodecaster Pro II and ensure it is in Multitrack (Input + Output) mode."
+    exit 1
+  fi
+
 }
 
 write_config_file() {
   device_serial="$1"
   output_file="$2"
   useSudo="$3"
+
+  # determine which template file to use based on the PID of the connected device
+  if lsusb | grep -E "${RODE_VID}:${RODECASTER_PRO_2_PID_1_7_3}" >/dev/null 2>&1; then
+    echo "Detected Rodecaster Pro II with PID ${RODECASTER_PRO_2_PID_1_7_3}. Using template for firmware 1.7.3."
+    TEMPLATE_FILE="${TEMPLATE_FILE_1_7_3}"
+    TEMPLATE_DOWNLOAD_URL="${TEMPLATE_DOWNLOAD_URL_PREFIX}${TEMPLATE_FILE_1_7_3}"
+  elif lsusb | grep -E "${RODE_VID}:${RODECASTER_PRO_2_PID_1_6_8}" >/dev/null 2>&1; then
+    echo "Detected Rodecaster Pro II with PID ${RODECASTER_PRO_2_PID_1_6_8}. Using template for firmware 1.6.8."
+    TEMPLATE_FILE="${TEMPLATE_FILE_1_6_8}"
+    TEMPLATE_DOWNLOAD_URL="${TEMPLATE_DOWNLOAD_URL_PREFIX}${TEMPLATE_FILE_1_6_8}"
+  else
+    echo "No compatible Rodecaster Pro II device detected. Please connect your Rodecaster Pro II and ensure it is in Multitrack (Input + Output) mode."
+    exit 1
+  fi
 
   # copy template file, if it exists in the current directory
   if [ -f "$TEMPLATE_FILE" ]; then
@@ -143,11 +164,18 @@ uninstall() {
 }
 
 # DO NOT EDIT THESE VARIABLES BELOW
-TEMPLATE_FILE="rodecaster-pro-2.template.conf"
-TEMPLATE_DOWNLOAD_URL="https://parzival-space.github.io/rodecaster-pro-2-virtual-devices-pipewire/${TEMPLATE_FILE}"
+TEMPLATE_FILE_1_6_8="rodecaster-pro-2-1.6.8.template.conf"
+TEMPLATE_FILE_1_7_3="rodecaster-pro-2-1.7.3.template.conf"
+TEMPLATE_DOWNLOAD_URL_PREFIX="https://parzival-space.github.io/rodecaster-pro-2-virtual-devices-pipewire/${TEMPLATE_FILE_1_6_8}"
 TEMPLATE_STRING_DEVICE_SERIAL="{{DEVICE_SERIAL}}"
 PIPEWIRE_CONFIG_DIR_SYSTEM="/usr/share/pipewire/pipewire.conf.d"
 PIPEWIRE_CONFIG_DIR_USER="$HOME/.config/pipewire/pipewire.conf.d"
+
+# Rodecaster Pro II PIDs
+RODE_VID="19f7"
+RODECASTER_PRO_2_PID_1_6_8="0072"
+RODECASTER_PRO_2_PID_1_7_3="0094"
+
 
 # cli flags
 FLAG_USER_INSTALL=false
