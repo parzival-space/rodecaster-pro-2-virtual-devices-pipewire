@@ -24,6 +24,9 @@ used by the Pro II 1.7.3 template.
             <td align="center">
                 Firmware 1.7.3 Virtual Devices
             </td>
+            <td align="center">
+                RODECaster Duo 1.7.3 Virtual Devices
+            </td>
         </tr>
     </thead>
     <tbody>
@@ -33,6 +36,9 @@ used by the Pro II 1.7.3 template.
             </td>
             <td>
                 <img src="./.github/assets/mappings_1.7.3.png">
+            </td>
+            <td>
+                <img src="./.github/assets/mappings_duo_1.7.3.png">
             </td>
         </tr>
     </tbody>
