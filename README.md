@@ -12,7 +12,7 @@ notice any missing channels or have any suggestions for improvement.
 - RODECaster Pro II firmware 1.7.3
 - RODECaster Duo firmware 1.7.3
 
-The RODECaster Duo 1.7.3 template currently exposes 4 physical faders, 3 virtual faders, and the same 5 output sinks
+The RODECaster Duo 1.7.3 template currently exposes 4 physical faders, 5 virtual faders, and the same 5 output sinks
 used by the Pro II 1.7.3 template.
 
 <table>
