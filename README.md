@@ -15,13 +15,6 @@ notice any missing channels or have any suggestions for improvement.
 The RODECaster Duo 1.7.3 template currently exposes 4 physical faders, 3 virtual faders, and the same 5 output sinks
 used by the Pro II 1.7.3 template.
 
-Example Duo USB detection:
-
-```bash
-$ lsusb -s 3:48
-Bus 003 Device 048: ID 19f7:0095 RODE Microphones RODECaster Duo
-```
-
 <table>
     <thead>
         <tr>
