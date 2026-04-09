@@ -1,5 +1,79 @@
 #!/bin/sh
 
+device_pid_present() {
+  pid="$1"
+  lsusb | grep -E "${RODE_VID}:${pid}" >/dev/null 2>&1
+}
+
+get_device_name() {
+  case "$1" in
+    pro2)
+      echo "Rodecaster Pro II"
+      ;;
+    duo)
+      echo "Rodecaster Duo"
+      ;;
+    *)
+      echo "Rodecaster"
+      ;;
+  esac
+}
+
+get_config_prefix() {
+  case "$1" in
+    pro2)
+      echo "rodecaster-pro-2"
+      ;;
+    duo)
+      echo "rodecaster-duo"
+      ;;
+  esac
+}
+
+get_template_file() {
+  device_model="$1"
+
+  case "$device_model" in
+    duo)
+      if device_pid_present "$RODECASTER_DUO_PID_1_7_3"; then
+        echo "$TEMPLATE_FILE_DUO_1_7_3"
+        return 0
+      fi
+      ;;
+    pro2)
+      if device_pid_present "$RODECASTER_PRO_2_PID_1_7_3"; then
+        echo "$TEMPLATE_FILE_1_7_3"
+        return 0
+      fi
+
+      if device_pid_present "$RODECASTER_PRO_2_PID_1_6_8"; then
+        echo "$TEMPLATE_FILE_1_6_8"
+        return 0
+      fi
+      ;;
+  esac
+
+  return 1
+}
+
+list_connected_devices() {
+  pw-cli ls Device | awk '
+    /alsa_card\.usb-R__DE_RODECaster_Pro_II_/ {
+      line = $0
+      sub(/.*alsa_card\.usb-R__DE_RODECaster_Pro_II_/, "", line)
+      sub(/".*/, "", line)
+      print "pro2|" line
+      next
+    }
+    /alsa_card\.usb-R__DE_RODECaster_Duo_/ {
+      line = $0
+      sub(/.*alsa_card\.usb-R__DE_RODECaster_Duo_/, "", line)
+      sub(/".*/, "", line)
+      print "duo|" line
+    }
+  '
+}
+
 check_requirements() {
   # check if command 'pw-cli' exists
   if ! command -v pw-cli >/dev/null 2>&1; then
@@ -28,32 +102,31 @@ check_requirements() {
     fi
   fi
 
-  # check if one of the PIDs for Rodecaster Pro II is present in the list of devices using lsusb
-  if ! lsusb | grep -E "${RODE_VID}:${RODECASTER_PRO_2_PID_1_6_8}|${RODE_VID}:${RODECASTER_PRO_2_PID_1_7_3}" >/dev/null 2>&1; then
-    echo "No Rodecaster Pro II Multitrack device detected. Please connect your Rodecaster Pro II and ensure it is in Multitrack (Input + Output) mode."
+  # check if one of the supported Rodecaster devices is present using lsusb
+  if ! device_pid_present "$RODECASTER_PRO_2_PID_1_6_8" \
+    && ! device_pid_present "$RODECASTER_PRO_2_PID_1_7_3" \
+    && ! device_pid_present "$RODECASTER_DUO_PID_1_7_3"; then
+    echo "No supported Rodecaster multitrack device detected. Please connect your Rodecaster Pro II or Rodecaster Duo and ensure it is in Multitrack (Input + Output) mode."
     exit 1
   fi
 
 }
 
 write_config_file() {
-  device_serial="$1"
-  output_file="$2"
-  useSudo="$3"
+  device_model="$1"
+  device_serial="$2"
+  output_file="$3"
+  useSudo="$4"
+  device_name=$(get_device_name "$device_model")
+  TEMPLATE_FILE=$(get_template_file "$device_model")
 
-  # determine which template file to use based on the PID of the connected device
-  if lsusb | grep -E "${RODE_VID}:${RODECASTER_PRO_2_PID_1_7_3}" >/dev/null 2>&1; then
-    echo "Detected Rodecaster Pro II with PID ${RODECASTER_PRO_2_PID_1_7_3}. Using template for firmware 1.7.3."
-    TEMPLATE_FILE="${TEMPLATE_FILE_1_7_3}"
-    TEMPLATE_DOWNLOAD_URL="${TEMPLATE_DOWNLOAD_URL_PREFIX}${TEMPLATE_FILE_1_7_3}"
-  elif lsusb | grep -E "${RODE_VID}:${RODECASTER_PRO_2_PID_1_6_8}" >/dev/null 2>&1; then
-    echo "Detected Rodecaster Pro II with PID ${RODECASTER_PRO_2_PID_1_6_8}. Using template for firmware 1.6.8."
-    TEMPLATE_FILE="${TEMPLATE_FILE_1_6_8}"
-    TEMPLATE_DOWNLOAD_URL="${TEMPLATE_DOWNLOAD_URL_PREFIX}${TEMPLATE_FILE_1_6_8}"
-  else
-    echo "No compatible Rodecaster Pro II device detected. Please connect your Rodecaster Pro II and ensure it is in Multitrack (Input + Output) mode."
+  if [ -z "$TEMPLATE_FILE" ]; then
+    echo "No compatible ${device_name} template found. Please verify the connected device firmware is supported."
     exit 1
   fi
+
+  echo "Detected ${device_name}. Using template ${TEMPLATE_FILE}."
+  TEMPLATE_DOWNLOAD_URL="${TEMPLATE_DOWNLOAD_URL_BASE}${TEMPLATE_FILE}"
 
   # copy template file, if it exists in the current directory
   if [ -f "$TEMPLATE_FILE" ]; then
@@ -86,10 +159,7 @@ write_config_file() {
 install() {
   useUserContext="$1"
   noRestartAfterInstall="$2"
-
-  # Get list of device serials
-  DEVICE_SERIALS_TMP=$(pw-cli ls Device | grep 'alsa_card.usb-R__DE_RODECaster_Pro_II_' | sed 's/.*alsa_card\.usb-R__DE_RODECaster_Pro_II_//' | sed 's/".*//')
-  DEVICE_COUNT=0
+  CONNECTED_DEVICES=$(list_connected_devices)
 
   CONFIG_DIR="$PIPEWIRE_CONFIG_DIR_SYSTEM"
   if [ "$useUserContext" = "true" ]; then
@@ -105,15 +175,21 @@ install() {
     fi
   fi
 
-  echo "$DEVICE_SERIALS_TMP" | while IFS= read -r SERIAL; do
+  if [ -z "$CONNECTED_DEVICES" ]; then
+    echo "No supported Rodecaster devices were found in PipeWire. Please ensure the device is connected and in Multitrack (Input + Output) mode."
+    exit 1
+  fi
+
+  echo "$CONNECTED_DEVICES" | while IFS='|' read -r DEVICE_MODEL SERIAL; do
     [ -z "$SERIAL" ] && continue
-    DEVICE_COUNT=$((DEVICE_COUNT + 1))
-    echo "Installing virtual devices for Rodecaster Pro II with serial: $SERIAL"
-    OUTPUT_FILE="${CONFIG_DIR}/rodecaster-pro-2-${SERIAL}.conf"
+    DEVICE_NAME=$(get_device_name "$DEVICE_MODEL")
+    CONFIG_PREFIX=$(get_config_prefix "$DEVICE_MODEL")
+    echo "Installing virtual devices for ${DEVICE_NAME} with serial: $SERIAL"
+    OUTPUT_FILE="${CONFIG_DIR}/${CONFIG_PREFIX}-${SERIAL}.conf"
     if [ "$useUserContext" = "true" ]; then
-      write_config_file "$SERIAL" "$OUTPUT_FILE" "false"
+      write_config_file "$DEVICE_MODEL" "$SERIAL" "$OUTPUT_FILE" "false"
     else
-      write_config_file "$SERIAL" "$OUTPUT_FILE" "true"
+      write_config_file "$DEVICE_MODEL" "$SERIAL" "$OUTPUT_FILE" "true"
     fi
   done
 
@@ -143,8 +219,10 @@ uninstall() {
     echo "Removing virtual device configuration files from $CONFIG_DIR"
     if [ "$useUserContext" = "true" ]; then
       rm -f "${CONFIG_DIR}/rodecaster-pro-2-"*.conf
+      rm -f "${CONFIG_DIR}/rodecaster-duo-"*.conf
     else
       sudo rm -f "${CONFIG_DIR}/rodecaster-pro-2-"*.conf
+      sudo rm -f "${CONFIG_DIR}/rodecaster-duo-"*.conf
     fi
 
     echo "Uninstallation complete. Restarting PipeWire..."
@@ -166,7 +244,8 @@ uninstall() {
 # DO NOT EDIT THESE VARIABLES BELOW
 TEMPLATE_FILE_1_6_8="rodecaster-pro-2-1.6.8.template.conf"
 TEMPLATE_FILE_1_7_3="rodecaster-pro-2-1.7.3.template.conf"
-TEMPLATE_DOWNLOAD_URL_PREFIX="https://parzival-space.github.io/rodecaster-pro-2-virtual-devices-pipewire/${TEMPLATE_FILE_1_6_8}"
+TEMPLATE_FILE_DUO_1_7_3="rodecaster-duo-1.7.3.template.conf"
+TEMPLATE_DOWNLOAD_URL_BASE="https://parzival-space.github.io/rodecaster-pro-2-virtual-devices-pipewire/"
 TEMPLATE_STRING_DEVICE_SERIAL="{{DEVICE_SERIAL}}"
 PIPEWIRE_CONFIG_DIR_SYSTEM="/usr/share/pipewire/pipewire.conf.d"
 PIPEWIRE_CONFIG_DIR_USER="$HOME/.config/pipewire/pipewire.conf.d"
@@ -175,6 +254,7 @@ PIPEWIRE_CONFIG_DIR_USER="$HOME/.config/pipewire/pipewire.conf.d"
 RODE_VID="19f7"
 RODECASTER_PRO_2_PID_1_6_8="0072"
 RODECASTER_PRO_2_PID_1_7_3="0094"
+RODECASTER_DUO_PID_1_7_3="0095"
 
 
 # cli flags
