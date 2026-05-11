@@ -61,8 +61,17 @@ used by the Pro II 1.7.3 template.
 You can install this configuration by using one of the following methods.
 
 <b>
-You need to enable Multitrack Input and Output on the connected RODECaster device before running the install script.
+You need to enable Multitrack Input and Output on the connected RODECaster device before running the installation script.
 </b>
+
+> [!IMPORTANT]
+> If you are using an immutable system (e.g. Bazzite) or don't have write permissions to the system-wide PipeWire 
+> configuration directory, you can use the `--user` flag with the installation script to install the virtual devices 
+> for the current user only.
+> 
+> ```text
+> ./configure.sh --install --user
+> ```
 
 ### Method 1: Using the installation script
 
