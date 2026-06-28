@@ -45,16 +45,10 @@ used by the Pro II 1.7.3 template.
 </table>
 
 > [!IMPORTANT]
-> Proper support for the virtual devices has been added to Alsa UCM project (wich is part of all major Linux distributions).
-> Once the new UCM configuration gets released, you can simply update your system's alsa-ucm-conf package to get the virtual devices.
+> Proper support for the virtual devices of the RODECaster Pro II has been added to Alsa UCM project (wich is part of all major Linux distributions).
+> This means that virtual devices should from now on work out of the box on all major Linux distributions.
 >
-> **Additional note for Arch Linux users:**  
-> You can use the [alsa-ucm-conf-git](https://aur.archlinux.org/packages/alsa-ucm-conf-git/) AUR package to get the latest UCM configuration with support for the virtual devices.
-> This way you don't have to run this configuration script.
->
-> ```bash
-> yay -S alsa-ucm-conf-git
-> ```
+> **You still need to use this scipt if you are using a RODECaster Duo**
 
 ## Installing the Configuration
 
