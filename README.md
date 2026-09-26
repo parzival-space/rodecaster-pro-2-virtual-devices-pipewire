@@ -8,12 +8,18 @@ notice any missing channels or have any suggestions for improvement.
 
 ## Supported Devices
 
-- RODECaster Pro II firmware 1.6.8
-- RODECaster Pro II firmware 1.7.3
-- RODECaster Duo firmware 1.7.3
+> [!IMPORTANT]
+> Proper support for the virtual devices of the RODECaster Pro II has been added to the Alsa UCM project (which is part of all major Linux distributions).
+> This means that virtual devices should work out of the box for the Pro II on all major Linux distributions.
+> Only use this script if your Distribution does not provide up-to-date UCM profiles for some reason.
+>
+> **You still need to use this script if you are using a RODECaster Duo!**  
+> A PR for the RODECaster Duo UCM profiles already exists over [here](https://github.com/alsa-project/alsa-ucm-conf/pull/809)
+> and is waiting to be merged upstream to resolve this issue.
 
-The RODECaster Duo 1.7.3 template currently exposes 4 physical faders, 5 virtual faders, and the same 5 output sinks
-used by the Pro II 1.7.3 template.
+- RODECaster Pro II firmware 1.6.8
+- RODECaster Pro II firmware 1.7.3+
+- RODECaster Duo firmware 1.7.3+
 
 <table>
     <thead>
@@ -44,12 +50,6 @@ used by the Pro II 1.7.3 template.
     </tbody>
 </table>
 
-> [!IMPORTANT]
-> Proper support for the virtual devices of the RODECaster Pro II has been added to Alsa UCM project (wich is part of all major Linux distributions).
-> This means that virtual devices should from now on work out of the box on all major Linux distributions.
->
-> **You still need to use this scipt if you are using a RODECaster Duo**
-
 ## Installing the Configuration
 
 You can install this configuration by using one of the following methods.
@@ -59,7 +59,7 @@ You need to enable Multitrack Input and Output on the connected RODECaster devic
 </b>
 
 > [!IMPORTANT]
-> If you are using an immutable system (e.g. Bazzite) or don't have write permissions to the system-wide PipeWire 
+> If you are using an immutable system (e.g., Bazzite) or don't have write permissions to the system-wide PipeWire 
 > configuration directory, you can use the `--user` flag with the installation script to install the virtual devices 
 > for the current user only.
 > 
