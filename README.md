@@ -9,13 +9,10 @@ notice any missing channels or have any suggestions for improvement.
 ## Supported Devices
 
 > [!IMPORTANT]
-> Proper support for the virtual devices of the RODECaster Pro II has been added to the Alsa UCM project (which is part of all major Linux distributions).
-> This means that virtual devices should work out of the box for the Pro II on all major Linux distributions.
-> Only use this script if your Distribution does not provide up-to-date UCM profiles for some reason.
+> Proper support for the virtual devices of the RODECaster Pro II and Duo has been added to the Alsa UCM project (which is part of all major Linux distributions).
+> This means that virtual devices should work out of the box for on all major Linux distributions and you no longer need this script.
 >
-> **You still need to use this script if you are using a RODECaster Duo!**  
-> A PR for the RODECaster Duo UCM profiles already exists over [here](https://github.com/alsa-project/alsa-ucm-conf/pull/809)
-> and is waiting to be merged upstream to resolve this issue.
+> Only use this script if your Distribution does not provide up-to-date UCM profiles for some reason (Ubuntu 24.04, Linux Mint...).
 
 - RODECaster Pro II firmware 1.6.8
 - RODECaster Pro II firmware 1.7.3+
