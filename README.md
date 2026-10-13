@@ -10,7 +10,7 @@ notice any missing channels or have any suggestions for improvement.
 
 > [!IMPORTANT]
 > Proper support for the virtual devices of the RODECaster Pro II and Duo has been added to the Alsa UCM project (which is part of all major Linux distributions).
-> This means that virtual devices should work out of the box for on all major Linux distributions and you no longer need this script.
+> This means that virtual devices should work out of the box for all major Linux distributions and you no longer need this script.
 >
 > Only use this script if your Distribution does not provide up-to-date UCM profiles for some reason (Ubuntu 24.04, Linux Mint...).
 
