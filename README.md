@@ -52,7 +52,7 @@ notice any missing channels or have any suggestions for improvement.
 You can install this configuration by using one of the following methods.
 
 <b>
-You need to enable Multitrack Input and Output on the connected RODECaster device before running the installation script.
+You need to enable Multitrack Input and Output on the connected RODECaster device and put the device in the `pro-audio` profile on your PC before running the installation script.
 </b>
 
 > [!IMPORTANT]
